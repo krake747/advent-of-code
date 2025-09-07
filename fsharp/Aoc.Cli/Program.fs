@@ -1,7 +1,6 @@
 ﻿open Aoc.Cli
 open Spectre.Console.Cli
 open System.ComponentModel
-open System
 open Aoc.Lib
 
 // ---------------------------

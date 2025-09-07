@@ -1,6 +1,5 @@
 module Aoc.Cli.Core
 
-open Microsoft.Extensions.Configuration
 open System
 open System.IO
 open System.Net.Http
