@@ -7,15 +7,6 @@ open System.Net.Http
 open System.Text.Json
 
 // ---------------------------
-// Load appsettings.json
-// ---------------------------
-let appsettings =
-    ConfigurationBuilder()
-        .SetBasePath(Directory.GetCurrentDirectory())
-        .AddJsonFile("appsettings.json", optional = false, reloadOnChange = true)
-        .Build()
-
-// ---------------------------
 // Local session storage
 // ---------------------------
 type LocalConfig = { Session: string }
@@ -65,11 +56,11 @@ let resolveSession (cliSession: string) =
         cliSession
         Environment.GetEnvironmentVariable "AOC_SESSION"
         ensureLocalSession ()
-        appsettings.["AdventOfCode:Session"]
     ]
 
     candidates
-    |> List.tryFind (fun s -> not (String.IsNullOrWhiteSpace s))
+    |> List.filter (fun s -> not (String.IsNullOrWhiteSpace s))
+    |> List.tryHead
     |> Option.defaultWith promptSession
 
 // ---------------------------
