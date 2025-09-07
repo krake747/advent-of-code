@@ -3,7 +3,6 @@ namespace Aoc.Cli
 open Aoc.Lib
 open System.IO
 open System.Net.Http
-open Microsoft.Extensions.Configuration
 
 module Runner =
 
@@ -23,34 +22,17 @@ module Runner =
         { Text = text; Lines = lines }
 
     let private getInput (client: HttpClient) (path: string) (year: int) (day: int) =
-        if File.Exists path then
-            readInput path
-        else
-            let inputText = fetchInput client year day
-            saveInput path inputText
-            readInput path
+        let inputText = fetchInput client year day
+        saveInput path inputText
+        readInput path
 
-    let ensureInput (year: int) (day: int) : AocInput =
+    let ensureInput (client: HttpClient) (year: int) (day: int) : AocInput =
         Directory.CreateDirectory ".inputs" |> ignore
-
-        let config =
-            ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional = false, reloadOnChange = true)
-                .Build()
-
-        let session =
-            match config["AdventOfCode:Session"] with
-            | null
-            | "" -> failwith "Session key missing in appsettings.json"
-            | s -> s
 
         let path = inputPath year day
 
         if File.Exists path then
             readInput path
         else
-            use client = new HttpClient()
-            client.DefaultRequestHeaders.Add("Cookie", $"session={session}")
             getInput client path year day
 

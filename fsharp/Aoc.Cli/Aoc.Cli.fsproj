@@ -12,6 +12,7 @@
     </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Core.fs" />
     <Compile Include="Runner.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

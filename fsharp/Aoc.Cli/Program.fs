@@ -36,7 +36,7 @@ type FetchCommand() =
             printfn "Please provide both year and day."
             1
         else
-            let _ = Runner.ensureInput year day
+            Runner.ensureInput Core.httpClient year day |> ignore
             printfn "Input ready for Year %d Day %d" settings.Year day
             0
 
@@ -53,7 +53,7 @@ type SolveCommand() =
             printfn "Please provide both year and day."
             1
         else
-            let input = Runner.ensureInput year day
+            let input = Runner.ensureInput Core.httpClient year day
 
             [ 1; 2 ]
             |> List.iter (fun part ->
