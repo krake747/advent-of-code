@@ -1,8 +1,12 @@
 ﻿open Aoc.Cli
 open Spectre.Console.Cli
 open System.ComponentModel
+open System
 open Aoc.Lib
 
+// ---------------------------
+// Solver
+// ---------------------------
 let solve (year: int) (day: int) (part: int) (input: AocInput) =
     match year, day, part with
     | 2024, 1, 1 -> Day01.part1 input
@@ -23,6 +27,10 @@ type AocSettings() =
     [<Description("Day of the puzzle")>]
     member val Day = 0 with get, set
 
+    [<CommandOption("-s|--session")>]
+    [<Description("Override Advent of Code session token")>]
+    member val Session: string = null with get, set
+
 // ---------------------------
 // Fetch command
 // ---------------------------
@@ -36,7 +44,9 @@ type FetchCommand() =
             printfn "Please provide both year and day."
             1
         else
-            Runner.ensureInput Core.httpClient year day |> ignore
+            let session = Core.resolveSession settings.Session
+            let client = Core.httpClient session
+            Runner.ensureInput client year day |> ignore
             printfn "Input ready for Year %d Day %d" settings.Year day
             0
 
@@ -53,7 +63,9 @@ type SolveCommand() =
             printfn "Please provide both year and day."
             1
         else
-            let input = Runner.ensureInput Core.httpClient year day
+            let session = Core.resolveSession settings.Session
+            let client = Core.httpClient session
+            let input = Runner.ensureInput client year day
 
             [ 1; 2 ]
             |> List.iter (fun part ->
