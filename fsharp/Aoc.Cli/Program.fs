@@ -7,11 +7,20 @@ open System
 // ---------------------------
 // Solver
 // ---------------------------
-let solve (year: int) (day: int) (part: int) (input: AocInput) =
-    match year, day, part with
-    | 2024, 1, 1 -> Day01.part1 input |> Some
-    | 2024, 1, 2 -> Day01.part2 input |> Some
-    | _ -> None
+type Solver = AocInput -> obj
+
+let solvers: Map<int * int * int, Solver> =
+    Map [
+        (2024, 1, 1), fun i -> Day01.part1 i |> box
+        (2024, 1, 2), fun i -> Day01.part2 i |> box
+        (2024, 2, 1), fun i -> Day02.part1 i |> box
+        (2024, 2, 2), fun i -> Day02.part2 i |> box
+    ]
+
+// Lookup function
+let solve (puzzle: AocPuzzle) (input: AocInput) : obj option =
+    Map.tryFind (puzzle.Year, puzzle.Day, puzzle.Part) solvers
+    |> Option.map (fun solver -> solver input)
 
 // ---------------------------
 // Command settings
@@ -102,7 +111,7 @@ type SolveCommand() =
 
         [ 1; 2 ]
         |> List.iter (fun part ->
-            match solve year day part input with
+            match solve { Year = year; Day = day; Part = part } input with
             | Some result -> printfn "Year %d Day %d Part %d: %A" year day part result
             | None -> printfn "Solver for Year %d Day %d Part %d not implemented yet" year day part)
 
