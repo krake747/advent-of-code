@@ -9,10 +9,12 @@ module Runner =
     let private inputPath (year: int) (day: int) =
         Path.Combine(".inputs", $"year{year}day{day:D2}.txt")
 
+    let private testInputPath (year: int) (day: int) =
+        Path.Combine(".inputs", $"year{year}day{day:D2}_test.txt")
+
     let private fetchInput (client: HttpClient) (year: int) (day: int) =
         let url = $"https://adventofcode.com/{year}/day/{day}/input"
-        let result = client.GetStringAsync url |> Async.AwaitTask |> Async.RunSynchronously
-        result
+        client.GetStringAsync url |> Async.AwaitTask |> Async.RunSynchronously
 
     let private saveInput (path: string) (text: string) = File.WriteAllText(path, text)
 
@@ -26,13 +28,17 @@ module Runner =
         saveInput path inputText
         readInput path
 
-    let ensureInput (client: HttpClient) (year: int) (day: int) : AocInput =
+    let saveTestInput (year: int) (day: int) (text: string) =
         Directory.CreateDirectory ".inputs" |> ignore
+        let path = testInputPath year day
+        saveInput path text
 
+    let ensureInput (client: HttpClient) (year: int) (day: int) =
+        Directory.CreateDirectory ".inputs" |> ignore
         let path = inputPath year day
+        if File.Exists path then readInput path else getInput client path year day
 
-        if File.Exists path then
-            readInput path
-        else
-            getInput client path year day
-
+    let ensureTest (year: int) (day: int) =
+        Directory.CreateDirectory ".inputs" |> ignore
+        let path = testInputPath year day
+        if File.Exists path then readInput path else failwith "No test input file found"

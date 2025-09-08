@@ -2,6 +2,7 @@
 open Spectre.Console.Cli
 open System.ComponentModel
 open Aoc.Lib
+open System
 
 // ---------------------------
 // Solver
@@ -26,6 +27,10 @@ type AocSettings() =
     [<Description("Day of the puzzle")>]
     member val Day = 0 with get, set
 
+    [<CommandOption("-t|--test")>]
+    [<Description("Use test input instead of real puzzle input")>]
+    member val UseTest = false with get, set
+
     [<CommandOption("-s|--session")>]
     [<Description("Override Advent of Code session token")>]
     member val Session: string = null with get, set
@@ -49,10 +54,20 @@ type FetchCommand() =
         0
 
 // ---------------------------
-// Solve command
+// Test File command
 // ---------------------------
-type SolveCommand() =
+type TestFileCommand() =
     inherit Command<AocSettings>()
+
+    let readManualInput () =
+        printfn "Please paste your input, then press Enter twice to finish:"
+
+        let rec loop acc =
+            let line = Console.ReadLine()
+            if String.IsNullOrWhiteSpace line then List.rev acc else loop (line :: acc)
+
+        let lines = loop []
+        String.Join("\n", lines)
 
     override _.Execute(_, settings) =
         let year, day = settings.Year, settings.Day
@@ -60,9 +75,30 @@ type SolveCommand() =
         if year = 0 || day = 0 then
             failwith "Please provide both year and day."
 
+        Runner.saveTestInput year day (readManualInput ()) |> ignore
+        printfn "Set test input for Year %d Day %d" year day
+        0
+
+
+// ---------------------------
+// Solve command
+// ---------------------------
+type SolveCommand() =
+    inherit Command<AocSettings>()
+
+    override _.Execute(_, settings) =
+        let year, day, test = settings.Year, settings.Day, settings.UseTest
+
+        if year = 0 || day = 0 then
+            failwith "Please provide both year and day."
+
         let session = Core.resolveSession settings.Session
         let client = Core.httpClient session
-        let input = Runner.ensureInput client year day
+
+        let input =
+            match test with
+            | true -> Runner.ensureTest year day
+            | _ -> Runner.ensureInput client year day
 
         [ 1; 2 ]
         |> List.iter (fun part ->
@@ -83,6 +119,7 @@ module Program =
 
         app.Configure(fun cfg ->
             cfg.AddCommand<FetchCommand> "fetch" |> ignore
-            cfg.AddCommand<SolveCommand> "solve" |> ignore)
+            cfg.AddCommand<SolveCommand> "solve" |> ignore
+            cfg.AddCommand<TestFileCommand> "test-file" |> ignore)
 
         app.Run argv
