@@ -1,8 +1,9 @@
 ﻿open Aoc.Cli
-open Spectre.Console.Cli
-open System.ComponentModel
 open Aoc.Lib
+open Spectre.Console
+open Spectre.Console.Cli
 open System
+open System.ComponentModel
 
 // ---------------------------
 // Solver
@@ -109,11 +110,24 @@ type SolveCommand() =
             | true -> Runner.ensureTest year day
             | _ -> Runner.ensureInput client year day
 
+        let table = Table()
+        table.Border <- TableBorder.Rounded
+        table.AddColumn "Part" |> ignore
+        table.AddColumn "Result" |> ignore
+        table.AddColumn "Status" |> ignore
+
         [ 1; 2 ]
         |> List.iter (fun part ->
             match solve { Year = year; Day = day; Part = part } input with
-            | Some result -> printfn "Year %d Day %d Part %d: %A" year day part result
-            | None -> printfn "Solver for Year %d Day %d Part %d not implemented yet" year day part)
+            | Some result ->
+                table.AddRow(Markup(part.ToString()), Markup(sprintf "%A" result), Markup("[green]✓[/]"))
+                |> ignore
+            | None ->
+                table.AddRow(Markup(part.ToString()), Markup("-"), Markup("[red]Not Implemented[/]"))
+                |> ignore)
+
+        AnsiConsole.MarkupLine $"[bold yellow]Year {year} Day {day} Results[/]"
+        AnsiConsole.Write table
 
         0
 
