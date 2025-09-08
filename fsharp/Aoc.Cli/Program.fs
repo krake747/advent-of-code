@@ -112,9 +112,9 @@ type SolveCommand() =
 
         let table = Table()
         table.Border <- TableBorder.Rounded
-        table.AddColumn "Part" |> ignore
-        table.AddColumn "Result" |> ignore
-        table.AddColumn "Status" |> ignore
+        table.AddColumn(TableColumn("Part").RightAligned()) |> ignore
+        table.AddColumn(TableColumn("Result").RightAligned()) |> ignore
+        table.AddColumn(TableColumn("Status").Centered()) |> ignore
 
         [ 1; 2 ]
         |> List.iter (fun part ->
@@ -126,7 +126,7 @@ type SolveCommand() =
                 table.AddRow(Markup(part.ToString()), Markup("-"), Markup("[red]Not Implemented[/]"))
                 |> ignore)
 
-        AnsiConsole.MarkupLine $"[bold yellow]Year {year} Day {day} Results[/]"
+        AnsiConsole.MarkupLine $"[bold orchid]Year {year} Day {day} Results[/]"
         AnsiConsole.Write table
 
         0
