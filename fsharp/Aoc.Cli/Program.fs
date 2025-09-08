@@ -8,9 +8,9 @@ open Aoc.Lib
 // ---------------------------
 let solve (year: int) (day: int) (part: int) (input: AocInput) =
     match year, day, part with
-    | 2024, 1, 1 -> Day01.part1 input
-    | 2024, 1, 2 -> Day01.part2 input
-    | _ -> failwith "Day/part not implemented"
+    | 2024, 1, 1 -> Day01.part1 input |> Some
+    | 2024, 1, 2 -> Day01.part2 input |> Some
+    | _ -> None
 
 // ---------------------------
 // Command settings
@@ -40,14 +40,13 @@ type FetchCommand() =
         let year, day = settings.Year, settings.Day
 
         if year = 0 || day = 0 then
-            printfn "Please provide both year and day."
-            1
-        else
-            let session = Core.resolveSession settings.Session
-            let client = Core.httpClient session
-            Runner.ensureInput client year day |> ignore
-            printfn "Input ready for Year %d Day %d" settings.Year day
-            0
+            failwith "Please provide both year and day."
+
+        let session = Core.resolveSession settings.Session
+        let client = Core.httpClient session
+        Runner.ensureInput client year day |> ignore
+        printfn "Input ready for Year %d Day %d" settings.Year day
+        0
 
 // ---------------------------
 // Solve command
@@ -59,22 +58,19 @@ type SolveCommand() =
         let year, day = settings.Year, settings.Day
 
         if year = 0 || day = 0 then
-            printfn "Please provide both year and day."
-            1
-        else
-            let session = Core.resolveSession settings.Session
-            let client = Core.httpClient session
-            let input = Runner.ensureInput client year day
+            failwith "Please provide both year and day."
 
-            [ 1; 2 ]
-            |> List.iter (fun part ->
-                try
-                    let result = solve year day part input
-                    printfn "Year %d Day %d Part %d: %A" year day part result
-                with _ ->
-                    printfn "Solver for Year %d Day %d Part %d not implemented yet" year day part)
+        let session = Core.resolveSession settings.Session
+        let client = Core.httpClient session
+        let input = Runner.ensureInput client year day
 
-            0
+        [ 1; 2 ]
+        |> List.iter (fun part ->
+            match solve year day part input with
+            | Some result -> printfn "Year %d Day %d Part %d: %A" year day part result
+            | None -> printfn "Solver for Year %d Day %d Part %d not implemented yet" year day part)
+
+        0
 
 // ---------------------------
 // Program entry point

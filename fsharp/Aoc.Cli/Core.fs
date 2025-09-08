@@ -10,57 +10,49 @@ open System.Text.Json
 // ---------------------------
 type LocalConfig = { Session: string }
 
-let configPath =
+let private configPath =
     Path.Combine(Environment.GetFolderPath Environment.SpecialFolder.UserProfile, ".aoc", "config.json")
 
-let ensureLocalSession () =
-    let dir = Path.GetDirectoryName configPath
+let private ensureLocalSession () =
+    match File.Exists configPath with
+    | true ->
+        File.ReadAllText configPath
+        |> JsonSerializer.Deserialize<LocalConfig>
+        |> Option.ofObj
+        |> Option.map (fun cfg -> cfg.Session)
+    | false -> None
 
-    if not (Directory.Exists dir) then
-        Directory.CreateDirectory dir |> ignore
-
-    if File.Exists configPath then
-        let text = File.ReadAllText configPath
-        let cfg = JsonSerializer.Deserialize<LocalConfig> text
-        cfg.Session
-    else
-        null
-
-let saveLocalSession (session: string) =
-    let dir = Path.GetDirectoryName(configPath)
-
-    if not (Directory.Exists dir) then
-        Directory.CreateDirectory dir |> ignore
-
+let private saveLocalSession (session: string) =
     let cfg = { Session = session }
     let json = JsonSerializer.Serialize cfg
     File.WriteAllText(configPath, json)
 
+let private promptSession () =
+    printf "Enter your Advent of Code session: "
+    let input = Console.ReadLine()
+
+    if String.IsNullOrWhiteSpace input then
+        failwith "Session cannot be empty."
+
+    saveLocalSession input
+    input
 
 // ---------------------------
 // Resolve session from multiple sources
 // ---------------------------
 let resolveSession (cliSession: string) =
-    let promptSession () =
-        printf "Enter your Advent of Code session: "
-        let input = Console.ReadLine()
+    let dir = Path.GetDirectoryName configPath
 
-        if String.IsNullOrWhiteSpace input then
-            failwith "Session cannot be empty."
-
-        saveLocalSession input
-        input
+    if not (Directory.Exists dir) then
+        Directory.CreateDirectory dir |> ignore
 
     let candidates = [
-        cliSession
-        Environment.GetEnvironmentVariable "AOC_SESSION"
+        cliSession |> Option.ofObj
+        Environment.GetEnvironmentVariable "AOC_SESSION" |> Option.ofObj
         ensureLocalSession ()
     ]
 
-    candidates
-    |> List.filter (fun s -> not (String.IsNullOrWhiteSpace s))
-    |> List.tryHead
-    |> Option.defaultWith promptSession
+    candidates |> List.choose id |> List.tryHead |> Option.defaultWith promptSession
 
 // ---------------------------
 // HTTP client with session cookie
