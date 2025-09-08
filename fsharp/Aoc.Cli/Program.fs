@@ -48,6 +48,7 @@ type AocSettings() =
 // ---------------------------
 // Fetch command
 // ---------------------------
+[<Description("Fetch puzzle input from Advent of Code")>]
 type FetchCommand() =
     inherit Command<AocSettings>()
 
@@ -64,35 +65,9 @@ type FetchCommand() =
         0
 
 // ---------------------------
-// Test File command
-// ---------------------------
-type TestFileCommand() =
-    inherit Command<AocSettings>()
-
-    let readManualInput () =
-        printfn "Please paste your input, then press Enter twice to finish:"
-
-        let rec loop acc =
-            let line = Console.ReadLine()
-            if String.IsNullOrWhiteSpace line then List.rev acc else loop (line :: acc)
-
-        let lines = loop []
-        String.Join("\n", lines)
-
-    override _.Execute(_, settings) =
-        let year, day = settings.Year, settings.Day
-
-        if year = 0 || day = 0 then
-            failwith "Please provide both year and day."
-
-        Runner.saveTestInput year day (readManualInput ()) |> ignore
-        printfn "Set test input for Year %d Day %d" year day
-        0
-
-
-// ---------------------------
 // Solve command
 // ---------------------------
+[<Description("Solve a puzzle for the given year and day")>]
 type SolveCommand() =
     inherit Command<AocSettings>()
 
@@ -120,16 +95,46 @@ type SolveCommand() =
         |> List.iter (fun part ->
             match solve { Year = year; Day = day; Part = part } input with
             | Some result ->
-                table.AddRow(Markup(part.ToString()), Markup(sprintf "%A" result), Markup("[green]✓[/]"))
+                table.AddRow(Markup(part.ToString()), Markup(sprintf "%A" result), Markup "[green]✓[/]")
                 |> ignore
             | None ->
-                table.AddRow(Markup(part.ToString()), Markup("-"), Markup("[red]Not Implemented[/]"))
+                table.AddRow(Markup(part.ToString()), Markup "-", Markup "[red]Not Implemented[/]")
                 |> ignore)
 
         AnsiConsole.MarkupLine $"[bold orchid]Year {year} Day {day} Results[/]"
         AnsiConsole.Write table
 
         0
+
+
+// ---------------------------
+// Test File command
+// ---------------------------
+[<Description("Create or set test input for a puzzle")>]
+type TestFileCommand() =
+    inherit Command<AocSettings>()
+
+    let readManualInput () =
+        printfn "Please paste your input, then press Enter twice to finish:"
+
+        let rec loop acc =
+            let line = Console.ReadLine()
+            if String.IsNullOrWhiteSpace line then List.rev acc else loop (line :: acc)
+
+        let lines = loop []
+        String.Join("\n", lines)
+
+    override _.Execute(_, settings) =
+        let year, day = settings.Year, settings.Day
+
+        if year = 0 || day = 0 then
+            failwith "Please provide both year and day."
+
+        Runner.saveTestInput year day (readManualInput ()) |> ignore
+        printfn "Set test input for Year %d Day %d" year day
+        0
+
+
 
 // ---------------------------
 // Program entry point
@@ -141,8 +146,9 @@ module Program =
         let app = CommandApp()
 
         app.Configure(fun cfg ->
-            cfg.AddCommand<FetchCommand> "fetch" |> ignore
-            cfg.AddCommand<SolveCommand> "solve" |> ignore
+            cfg.SetApplicationName "aoc" |> ignore
+            cfg.AddCommand<FetchCommand>("fetch").WithExample "fetch -y 2024 -d 1" |> ignore
+            cfg.AddCommand<SolveCommand>("solve").WithExample "solve -y 2024 -d 1" |> ignore
             cfg.AddCommand<TestFileCommand> "test-file" |> ignore)
 
         app.Run argv
