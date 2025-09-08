@@ -12,10 +12,10 @@ type Solver = AocInput -> obj
 
 let solvers: Map<int * int * int, Solver> =
     Map [
-        (2024, 1, 1), fun i -> Day01.part1 i |> box
-        (2024, 1, 2), fun i -> Day01.part2 i |> box
-        (2024, 2, 1), fun i -> Day02.part1 i |> box
-        (2024, 2, 2), fun i -> Day02.part2 i |> box
+        (2024, 1, 1), Day01.part1 >> box
+        (2024, 1, 2), Day01.part2 >> box
+        (2024, 2, 1), Day02.part1 >> box
+        (2024, 2, 2), Day02.part2 >> box
     ]
 
 // Lookup function
@@ -61,7 +61,7 @@ type FetchCommand() =
         let session = Core.resolveSession settings.Session
         let client = Core.httpClient session
         Runner.ensureInput client year day |> ignore
-        printfn "Input ready for Year %d Day %d" settings.Year day
+        printfn $"Input ready for Year %d{settings.Year} Day %d{day}"
         0
 
 // ---------------------------
@@ -95,7 +95,7 @@ type SolveCommand() =
         |> List.iter (fun part ->
             match solve { Year = year; Day = day; Part = part } input with
             | Some result ->
-                table.AddRow(Markup(part.ToString()), Markup(sprintf "%A" result), Markup "[green]✓[/]")
+                table.AddRow(Markup(part.ToString()), Markup $"%A{result}", Markup "[green]✓[/]")
                 |> ignore
             | None ->
                 table.AddRow(Markup(part.ToString()), Markup "-", Markup "[red]Not Implemented[/]")
@@ -130,8 +130,8 @@ type TestFileCommand() =
         if year = 0 || day = 0 then
             failwith "Please provide both year and day."
 
-        Runner.saveTestInput year day (readManualInput ()) |> ignore
-        printfn "Set test input for Year %d Day %d" year day
+        Runner.saveTestInput year day (readManualInput ())
+        printfn $"Set test input for Year %d{year} Day %d{day}"
         0
 
 

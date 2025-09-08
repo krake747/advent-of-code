@@ -19,7 +19,7 @@ let private ensureLocalSession () =
         File.ReadAllText configPath
         |> JsonSerializer.Deserialize<LocalConfig>
         |> Option.ofObj
-        |> Option.map (fun cfg -> cfg.Session)
+        |> Option.map _.Session
     | false -> None
 
 let private saveLocalSession (session: string) =
