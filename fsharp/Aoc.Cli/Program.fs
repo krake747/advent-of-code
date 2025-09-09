@@ -99,7 +99,8 @@ type SolveCommand() =
                 |> ignore
             | None ->
                 table.AddRow(Markup(part.ToString()), Markup "-", Markup "[red]Not Implemented[/]")
-                |> ignore)
+                |> ignore
+        )
 
         AnsiConsole.MarkupLine $"[bold orchid]Year {year} Day {day} Results[/]"
         AnsiConsole.Write table
@@ -149,6 +150,7 @@ module Program =
             cfg.SetApplicationName "aoc" |> ignore
             cfg.AddCommand<FetchCommand>("fetch").WithExample "fetch -y 2024 -d 1" |> ignore
             cfg.AddCommand<SolveCommand>("solve").WithExample "solve -y 2024 -d 1" |> ignore
-            cfg.AddCommand<TestFileCommand> "test-file" |> ignore)
+            cfg.AddCommand<TestFileCommand> "test-file" |> ignore
+        )
 
         app.Run argv
