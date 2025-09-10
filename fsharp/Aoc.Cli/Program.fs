@@ -19,16 +19,15 @@ let solvers : Map<int * int, Solver list> =
         (2024, 4), [ Day04.part1 >> box ; Day04.part2 >> box ]
     ]
 
-// Lookup function
 let solve (puzzle : AocPuzzle) (input : AocInput) : obj list option =
     solvers
     |> Map.tryFind (puzzle.Year, puzzle.Day)
     |> Option.map (List.map ((|>) input))
 
-let puzzleTitle (year: int) (day: int) : string option =
+let puzzleTitle (year : int) (day : int) : string option =
     typeof<AocPuzzleAttribute>.Assembly.GetTypes()
     |> Array.tryPick (fun t ->
-        t.GetCustomAttributes(typeof<AocPuzzleAttribute>, false)  // positional argument, not "inherit = false"
+        t.GetCustomAttributes(typeof<AocPuzzleAttribute>, false) // positional argument, not "inherit = false"
         |> Seq.cast<AocPuzzleAttribute>
         |> Seq.tryFind (fun attr -> attr.Year = year && attr.Day = day)
         |> Option.map (fun attr -> attr.Title)
@@ -103,23 +102,19 @@ type SolveCommand() =
 
         let table = Table()
         table.Border <- TableBorder.Rounded
-        table.Title <- TableTitle($"[bold orchid]{title}[/]")
+        table.Title <- TableTitle $"[bold orchid]{title}[/]"
         table.AddColumn(TableColumn("Part").RightAligned()) |> ignore
         table.AddColumn(TableColumn("Result").RightAligned()) |> ignore
         table.AddColumn(TableColumn("Status").Centered()) |> ignore
 
-        match solve { Year = year; Day = day } input with
+        match solve { Year = year ; Day = day } input with
         | Some results ->
             results
             |> List.iteri (fun i result ->
-                table.AddRow(
-                    Markup((i + 1).ToString()),
-                    Markup $"%A{result}",
-                    Markup "[green]✓[/]"
-                ) |> ignore
+                table.AddRow(Markup((i + 1).ToString()), Markup $"%A{result}", Markup "[green]✓[/]")
+                |> ignore
             )
-        | None ->
-            table.AddRow(Markup "-", Markup "-", Markup "[red]Not Implemented[/]") |> ignore
+        | None -> table.AddRow(Markup "-", Markup "-", Markup "[red]Not Implemented[/]") |> ignore
 
         AnsiConsole.Write table
         0
