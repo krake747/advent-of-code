@@ -27,7 +27,7 @@ let solve (puzzle : AocPuzzle) (input : AocInput) : obj list option =
 let puzzleTitle (year : int) (day : int) : string option =
     typeof<AocPuzzleAttribute>.Assembly.GetTypes()
     |> Array.tryPick (fun t ->
-        t.GetCustomAttributes(typeof<AocPuzzleAttribute>, false) // positional argument, not "inherit = false"
+        t.GetCustomAttributes(typeof<AocPuzzleAttribute>, false)
         |> Seq.cast<AocPuzzleAttribute>
         |> Seq.tryFind (fun attr -> attr.Year = year && attr.Day = day)
         |> Option.map (fun attr -> attr.Title)
