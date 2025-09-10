@@ -1,4 +1,5 @@
-﻿open Aoc.Cli
+﻿open System.Reflection
+open Aoc.Cli
 open Aoc.Lib
 open Spectre.Console
 open Spectre.Console.Cli
@@ -10,18 +11,28 @@ open System.ComponentModel
 // ---------------------------
 type Solver = AocInput -> obj
 
-let solvers: Map<int * int, Solver list> =
+let solvers : Map<int * int, Solver list> =
     Map [
-        (2024, 1), [ Day01.part1 >> box; Day01.part2 >> box ]
-        (2024, 2), [ Day02.part1 >> box; Day02.part1 >> box ]
-        (2024, 3), [ Day03.part2 >> box; Day03.part2 >> box ]
+        (2024, 1), [ Day01.part1 >> box ; Day01.part2 >> box ]
+        (2024, 2), [ Day02.part1 >> box ; Day02.part2 >> box ]
+        (2024, 3), [ Day03.part1 >> box ; Day03.part2 >> box ]
+        (2024, 4), [ Day04.part1 >> box ; Day04.part2 >> box ]
     ]
 
 // Lookup function
-let solve (puzzle: AocPuzzle) (input: AocInput) : obj list option =
+let solve (puzzle : AocPuzzle) (input : AocInput) : obj list option =
     solvers
     |> Map.tryFind (puzzle.Year, puzzle.Day)
     |> Option.map (List.map ((|>) input))
+
+let puzzleTitle (year: int) (day: int) : string option =
+    typeof<AocPuzzleAttribute>.Assembly.GetTypes()
+    |> Array.tryPick (fun t ->
+        t.GetCustomAttributes(typeof<AocPuzzleAttribute>, false)  // positional argument, not "inherit = false"
+        |> Seq.cast<AocPuzzleAttribute>
+        |> Seq.tryFind (fun attr -> attr.Year = year && attr.Day = day)
+        |> Option.map (fun attr -> attr.Title)
+    )
 
 // ---------------------------
 // Command settings
@@ -43,7 +54,7 @@ type AocSettings() =
 
     [<CommandOption("-s|--session")>]
     [<Description("Override Advent of Code session token")>]
-    member val Session: string = null with get, set
+    member val Session : string = null with get, set
 
 // ---------------------------
 // Fetch command
@@ -85,24 +96,31 @@ type SolveCommand() =
             | true -> Runner.ensureTest year day
             | _ -> Runner.ensureInput client year day
 
+        let title =
+            match puzzleTitle year day with
+            | Some t -> $"{t} - Year {year} Day {day}"
+            | None -> $"Year {year} Day {day}"
+
         let table = Table()
         table.Border <- TableBorder.Rounded
+        table.Title <- TableTitle($"[bold orchid]{title}[/]")
         table.AddColumn(TableColumn("Part").RightAligned()) |> ignore
         table.AddColumn(TableColumn("Result").RightAligned()) |> ignore
         table.AddColumn(TableColumn("Status").Centered()) |> ignore
 
-        [ 1; 2 ]
-        |> List.iter (fun part ->
-            match solve { Year = year; Day = day; Part = part } input with
-            | Some result ->
-                table.AddRow(Markup(part.ToString()), Markup $"%A{result}", Markup "[green]✓[/]")
-                |> ignore
-            | None ->
-                table.AddRow(Markup(part.ToString()), Markup "-", Markup "[red]Not Implemented[/]")
-                |> ignore
-        )
+        match solve { Year = year; Day = day } input with
+        | Some results ->
+            results
+            |> List.iteri (fun i result ->
+                table.AddRow(
+                    Markup((i + 1).ToString()),
+                    Markup $"%A{result}",
+                    Markup "[green]✓[/]"
+                ) |> ignore
+            )
+        | None ->
+            table.AddRow(Markup "-", Markup "-", Markup "[red]Not Implemented[/]") |> ignore
 
-        AnsiConsole.MarkupLine $"[bold orchid]Year {year} Day {day} Results[/]"
         AnsiConsole.Write table
         0
 
