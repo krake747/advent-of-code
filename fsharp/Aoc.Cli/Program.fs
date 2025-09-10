@@ -10,18 +10,18 @@ open System.ComponentModel
 // ---------------------------
 type Solver = AocInput -> obj
 
-let solvers: Map<int * int * int, Solver> =
+let solvers: Map<int * int, Solver list> =
     Map [
-        (2024, 1, 1), Day01.part1 >> box
-        (2024, 1, 2), Day01.part2 >> box
-        (2024, 2, 1), Day02.part1 >> box
-        (2024, 2, 2), Day02.part2 >> box
+        (2024, 1), [ Day01.part1 >> box; Day01.part2 >> box ]
+        (2024, 2), [ Day02.part1 >> box; Day02.part1 >> box ]
+        (2024, 3), [ Day03.part2 >> box; Day03.part2 >> box ]
     ]
 
 // Lookup function
-let solve (puzzle: AocPuzzle) (input: AocInput) : obj option =
-    Map.tryFind (puzzle.Year, puzzle.Day, puzzle.Part) solvers
-    |> Option.map (fun solver -> solver input)
+let solve (puzzle: AocPuzzle) (input: AocInput) : obj list option =
+    solvers
+    |> Map.tryFind (puzzle.Year, puzzle.Day)
+    |> Option.map (List.map ((|>) input))
 
 // ---------------------------
 // Command settings
@@ -104,7 +104,6 @@ type SolveCommand() =
 
         AnsiConsole.MarkupLine $"[bold orchid]Year {year} Day {day} Results[/]"
         AnsiConsole.Write table
-
         0
 
 
@@ -112,7 +111,7 @@ type SolveCommand() =
 // Test File command
 // ---------------------------
 [<Description("Create or set test input for a puzzle")>]
-type TestFileCommand() =
+type FetchTestCommand() =
     inherit Command<AocSettings>()
 
     let readManualInput () =
@@ -150,7 +149,7 @@ module Program =
             cfg.SetApplicationName "aoc" |> ignore
             cfg.AddCommand<FetchCommand>("fetch").WithExample "fetch -y 2024 -d 1" |> ignore
             cfg.AddCommand<SolveCommand>("solve").WithExample "solve -y 2024 -d 1" |> ignore
-            cfg.AddCommand<TestFileCommand> "test-file" |> ignore
+            cfg.AddCommand<FetchTestCommand> "fetch-test" |> ignore
         )
 
         app.Run argv

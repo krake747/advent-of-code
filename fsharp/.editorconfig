@@ -13,3 +13,5 @@ fsharp_max_if_then_else_short_width = 80
 fsharp_max_record_width = 60
 fsharp_multiline_bracket_style = stroustrup
 fsharp_multi_line_lambda_closing_newline = true
+fsharp_space_before_colon = false
+fsharp_space_before_semicolon = false
