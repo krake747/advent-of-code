@@ -130,11 +130,16 @@ type FetchTestCommand() =
     let readManualInput () =
         printfn "Please paste your input, then press Enter twice to finish:"
 
-        let rec loop acc =
+        let rec loop acc emptyCount =
             let line = Console.ReadLine()
-            if String.IsNullOrWhiteSpace line then List.rev acc else loop (line :: acc)
 
-        let lines = loop []
+            match line with
+            | null -> List.rev acc
+            | l when String.IsNullOrWhiteSpace l ->
+                if emptyCount + 1 >= 2 then List.rev acc else loop ("" :: acc) (emptyCount + 1)
+            | l -> loop (l :: acc) 0
+
+        let lines = loop [] 0
         String.Join("\n", lines)
 
     override _.Execute(_, settings) =

@@ -145,3 +145,54 @@ module Day04 =
 
     let part2 (input : AocInput) : int =
         input.Lines |> parseMap |> searchXmasShape |> List.length
+
+[<AocPuzzle(2024, 5, "Print Queue")>]
+module Day05 =
+
+    type Pages = string list
+    type PageUpdates = string list list
+    type PagePrecedenceRules = Collections.Generic.Comparer<string>
+
+    type SafetyManual = {
+        Updates : PageUpdates
+        PrecedenceRules : PagePrecedenceRules
+    }
+
+    let split (sep : string) (s : string) : string list = s.Split sep |> Array.toList
+    let splitByChar (sep : char) (s : string) : string list = s.Split sep |> Array.toList
+
+    let splitLines = splitByChar '\n'
+    let splitCommas = splitByChar ','
+
+    let sleighLaunchSafetyManual (text : string) : SafetyManual =
+        let parts = split "\n\n" text
+        let ordering = parts[0] |> (splitLines >> Set.ofList)
+        let updates = parts[1] |> (splitLines >> List.map splitCommas)
+
+        let precedenceRules =
+            PagePrecedenceRules.Create(fun p1 p2 -> if ordering.Contains $"%s{p1}|%s{p2}" then -1 else 1)
+
+        { Updates = updates ; PrecedenceRules = precedenceRules }
+
+    let elfPageSorting (precedenceRules : PagePrecedenceRules) (pages : Pages) : bool =
+        let compare p1 p2 = precedenceRules.Compare(p1, p2)
+        pages = List.sortWith compare pages
+
+    let extractMiddlePage (pages : Pages) : int = int pages[List.length pages / 2]
+
+    let part1 (input : AocInput) : int =
+        input.Text
+        |> sleighLaunchSafetyManual
+        |> fun manual ->
+            manual.Updates
+            |> List.filter (elfPageSorting manual.PrecedenceRules)
+            |> List.sumBy extractMiddlePage
+
+    let part2 (input : AocInput) =
+        input.Text
+        |> sleighLaunchSafetyManual
+        |> fun manual ->
+            manual.Updates
+            |> List.filter (fun pages -> not (elfPageSorting manual.PrecedenceRules pages))
+            |> List.map (List.sortWith (fun p1 p2 -> manual.PrecedenceRules.Compare(p1, p2)))
+            |> List.sumBy extractMiddlePage
