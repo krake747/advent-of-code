@@ -279,9 +279,9 @@ module Day07 =
 
     let concat (x : int64) (y : int64) = int64 (string x + string y)
 
-    let rec tryAllOperators (ops : Operator list) (acc : int64) (numbers : int64 list) (target : int64) : bool =
+    let rec tryAllOperators (ops : Operator list) (target : int64) (acc : int64) (numbers : int64 list) : bool =
         match numbers with
-        | n :: ns -> ops |> List.exists (fun op -> tryAllOperators ops (op acc n) ns target)
+        | n :: ns -> ops |> List.exists (fun op -> tryAllOperators ops target (op acc n) ns)
         | [] -> acc = target
 
     let readElphantEquations (lines : string list) : Equation list =
@@ -297,7 +297,7 @@ module Day07 =
 
     let canEngineersSolve (ops : Operator list) (eq : Equation) : bool =
         match eq.Numbers with
-        | n :: rest -> tryAllOperators ops n rest eq.Test
+        | n :: rest -> tryAllOperators ops eq.Test n rest
         | [] -> false
 
     let part1 (input : AocInput) : int64 =
