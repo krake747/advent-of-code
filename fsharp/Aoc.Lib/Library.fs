@@ -272,9 +272,17 @@ module Day06 =
 module Day07 =
 
     type Equation = { Test : int64 ; Numbers : int64 list }
+    type Operator = int64 -> int64 -> int64
 
     let split (sep : string) (s : string) = s.Split sep
     let splitByChar (sep : char) (s : string) = s.Split sep
+
+    let concat (x : int64) (y : int64) = int64 (string x + string y)
+
+    let rec tryAllOperators (ops : Operator list) (acc : int64) (numbers : int64 list) (target : int64) : bool =
+        match numbers with
+        | n :: ns -> ops |> List.exists (fun op -> tryAllOperators ops (op acc n) ns target)
+        | [] -> acc = target
 
     let readElphantEquations (lines : string list) : Equation list =
         lines
@@ -288,14 +296,19 @@ module Day07 =
         )
 
     let canElephantsSolve (eq : Equation) : bool =
-        let rec tryOperators acc numbers =
-            match numbers with
-            | n :: ns -> tryOperators (acc + n) ns || tryOperators (acc * n) ns
-            | [] -> acc = eq.Test
+        let calibrator = tryAllOperators [ (+) ; (*) ]
 
         match eq.Numbers with
-        | first :: rest -> tryOperators first rest
+        | n :: rest -> calibrator n rest eq.Test
         | [] -> false
+
+    let canEngineersSolve (eq : Equation) : bool =
+        let calibrator = tryAllOperators [ (+) ; (*) ; concat ]
+
+        match eq.Numbers with
+        | n :: rest -> calibrator n rest eq.Test
+        | [] -> false
+
 
     let part1 (input : AocInput) : int64 =
         input.Lines
@@ -306,5 +319,5 @@ module Day07 =
     let part2 (input : AocInput) : int64 =
         input.Lines
         |> readElphantEquations
-        |> List.filter canElephantsSolve
+        |> List.filter canEngineersSolve
         |> List.sumBy _.Test
