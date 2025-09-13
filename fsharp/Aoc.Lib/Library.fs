@@ -212,7 +212,7 @@ module Day06 =
         let dict = Dictionary<Point, char>()
 
         lines
-        |> List.iteri (fun y line -> line |> Seq.iteri (fun x c -> dict.[{ X = x ; Y = y }] <- c))
+        |> List.iteri (fun y line -> line |> Seq.iteri (fun x c -> dict[{ X = x ; Y = y }] <- c))
 
         dict
 
@@ -260,11 +260,51 @@ module Day06 =
         let start = locateGuardStart map '^'
         let route = trackGuardRoute map start
 
-        route
-        |> _.Positions
+        route.Positions
         |> Seq.filter (fun p -> map[p] = '.')
         |> Seq.sumBy (fun obstacle ->
             let updatedMap = updateMap map '#' obstacle
             let route = trackGuardRoute updatedMap start
-            route |> _.Loop |> fun loop -> if loop then 1 else 0
+            route.Loop |> fun loop -> if loop then 1 else 0
         )
+
+[<AocPuzzle(2024, 7, "Bridge Repair")>]
+module Day07 =
+
+    type Equation = { Test : int64 ; Numbers : int64 list }
+
+    let split (sep : string) (s : string) = s.Split sep
+    let splitByChar (sep : char) (s : string) = s.Split sep
+
+    let readElphantEquations (lines : string list) : Equation list =
+        lines
+        |> List.map (fun l ->
+            let parts = split ": " l
+
+            {
+                Test = int64 parts[0]
+                Numbers = splitByChar ' ' parts[1] |> (Array.map int64 >> Array.toList)
+            }
+        )
+
+    let canElephantsSolve (eq : Equation) : bool =
+        let rec tryOperators acc numbers =
+            match numbers with
+            | n :: ns -> tryOperators (acc + n) ns || tryOperators (acc * n) ns
+            | [] -> acc = eq.Test
+
+        match eq.Numbers with
+        | first :: rest -> tryOperators first rest
+        | [] -> false
+
+    let part1 (input : AocInput) : int64 =
+        input.Lines
+        |> readElphantEquations
+        |> List.filter canElephantsSolve
+        |> List.sumBy _.Test
+
+    let part2 (input : AocInput) : int64 =
+        input.Lines
+        |> readElphantEquations
+        |> List.filter canElephantsSolve
+        |> List.sumBy _.Test

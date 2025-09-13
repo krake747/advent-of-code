@@ -19,6 +19,7 @@ let solvers : Map<int * int, Solver list> =
         (2024, 4), [ Day04.part1 >> box ; Day04.part2 >> box ]
         (2024, 5), [ Day05.part1 >> box ; Day05.part2 >> box ]
         (2024, 6), [ Day06.part1 >> box ; Day06.part2 >> box ]
+        (2024, 7), [ Day07.part1 >> box ; Day07.part2 >> box ]
     ]
 
 let solve (puzzle : AocPuzzle) (input : AocInput) : (obj * int64) list option =
