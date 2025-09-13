@@ -196,3 +196,68 @@ module Day05 =
             |> List.filter (fun pages -> not (elfPageSorting manual.PrecedenceRules pages))
             |> List.map (List.sortWith (fun p1 p2 -> manual.PrecedenceRules.Compare(p1, p2)))
             |> List.sumBy extractMiddlePage
+
+[<AocPuzzle(2024, 6, "Guard Gallivant")>]
+module Day06 =
+
+    open Point
+
+    type PatrolMap = Map<Point, char>
+    type Positions = Set<Point>
+    type PatrolState = { Position : Point ; Direction : Point }
+    type GuardRoute = { Positions : Positions ; Loop : bool }
+
+    let parsePatrolMap (lines : string list) : PatrolMap =
+        lines
+        |> List.indexed
+        |> List.collect (fun (y, line) -> [ for x, c in line |> Seq.toList |> List.indexed -> { X = x ; Y = y }, c ])
+        |> Map.ofList
+
+    let locateGuardStart (map : PatrolMap) (c : char) : Point =
+        map |> Seq.find (fun kvp -> kvp.Value = c) |> _.Key
+
+    let trackGuardRoute (map : PatrolMap) (start : Point) : GuardRoute =
+        let rec track (visited : Set<PatrolState>) (patrol : PatrolState) =
+            if map.ContainsKey patrol.Position && not (visited.Contains patrol) then
+                let visited = visited.Add patrol
+
+                match map.TryFind(patrol.Position + patrol.Direction) |> Option.defaultValue ' ' with
+                | '#' -> track visited { patrol with Direction = rotateRight patrol.Direction }
+                | _ ->
+                    track visited {
+                        patrol with
+                            Position = patrol.Position + patrol.Direction
+                    }
+
+            else
+                {
+                    Positions = visited |> Seq.map _.Position |> Set.ofSeq
+                    Loop = visited.Contains patrol
+                }
+
+        track Set.empty { Position = start ; Direction = north }
+
+    let updateMap (map : PatrolMap) (obstacle : char) (position : Point) =
+        map |> Map.map (fun k v -> if k = position then obstacle else v)
+
+    let part1 (input : AocInput) : int =
+        input.Lines
+        |> parsePatrolMap
+        |> (fun map -> map, locateGuardStart map '^')
+        |> (fun (map, start) -> trackGuardRoute map start)
+        |> _.Positions
+        |> Set.count
+
+    let part2 (input : AocInput) : int =
+        let map = parsePatrolMap input.Lines
+        let start = locateGuardStart map '^'
+        let route = trackGuardRoute map start
+
+        route
+        |> _.Positions
+        |> Set.filter (fun p -> map[p] = '.')
+        |> Seq.sumBy (fun obstacle ->
+            let updatedMap = updateMap map '#' obstacle
+            let route = trackGuardRoute updatedMap start
+            route |> _.Loop |> (fun loop -> if loop then 1 else 0)
+        )

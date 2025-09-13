@@ -1,10 +1,10 @@
-﻿open System.Reflection
-open Aoc.Cli
+﻿open Aoc.Cli
 open Aoc.Lib
 open Spectre.Console
 open Spectre.Console.Cli
 open System
 open System.ComponentModel
+open System.Diagnostics
 
 // ---------------------------
 // Solver
@@ -17,6 +17,8 @@ let solvers : Map<int * int, Solver list> =
         (2024, 2), [ Day02.part1 >> box ; Day02.part2 >> box ]
         (2024, 3), [ Day03.part1 >> box ; Day03.part2 >> box ]
         (2024, 4), [ Day04.part1 >> box ; Day04.part2 >> box ]
+        (2024, 5), [ Day05.part1 >> box ; Day05.part2 >> box ]
+        (2024, 6), [ Day06.part1 >> box ; Day06.part2 >> box ]
     ]
 
 let solve (puzzle : AocPuzzle) (input : AocInput) : obj list option =
@@ -106,15 +108,27 @@ type SolveCommand() =
         table.AddColumn(TableColumn("Part").RightAligned()) |> ignore
         table.AddColumn(TableColumn("Result").RightAligned()) |> ignore
         table.AddColumn(TableColumn("Status").Centered()) |> ignore
+        table.AddColumn(TableColumn("Time (ms)").RightAligned()) |> ignore
+
+        let sw = Stopwatch.StartNew()
 
         match solve { Year = year ; Day = day } input with
         | Some results ->
+            let elapsed = sw.ElapsedMilliseconds
+
             results
             |> List.iteri (fun i result ->
-                table.AddRow(Markup((i + 1).ToString()), Markup $"%A{result}", Markup "[green]✓[/]")
+                table.AddRow(
+                    Markup((i + 1).ToString()),
+                    Markup $"%A{result}",
+                    Markup "[green]✓[/]",
+                    Markup $"{elapsed}"
+                )
                 |> ignore
             )
         | None -> table.AddRow(Markup "-", Markup "-", Markup "[red]Not Implemented[/]") |> ignore
+
+        sw.Stop()
 
         AnsiConsole.Write table
         0
