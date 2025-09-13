@@ -9,7 +9,9 @@
         "editor.fontLigatures": false,
         "editor.fontSize": 13,
         "editor.lineHeight": 21,
-        "editor.rulers": [120],
+        "editor.rulers": [
+            120
+        ],
         "editor.wordWrapColumn": 120,
         "editor.formatOnPaste": true,
         "editor.formatOnSave": true,
@@ -35,56 +37,9 @@
             "editor.defaultFormatter": "vscode.html-language-features",
             "editor.tabSize": 4
         },
-        "[css]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode",
-            "editor.tabSize": 4
-        },
-        "[scss]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode",
-            "editor.tabSize": 4
-        },
-        "[javascript]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode",
-            "editor.tabSize": 4
-        },
-        "[typescript]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode",
-            "editor.tabSize": 4
-        },
-        "[typescriptreact]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode",
-            "editor.tabSize": 4
-        },
-        "[javascriptreact]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode",
-            "editor.tabSize": 4
-        },
-        "[json]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode",
-            "editor.tabSize": 4
-        },
-        "[jsonc]": {
-            "editor.defaultFormatter": "esbenp.prettier-vscode",
-            "editor.tabSize": 4
-        },
-        "[yaml]": {
-            "editor.defaultFormatter": "redhat.vscode-yaml",
-            "editor.tabSize": 2
-        },
-        "[yml]": {
-            "editor.defaultFormatter": "redhat.vscode-yaml",
-            "editor.tabSize": 2
-        },
-        "[dockercompose]": {
-            "editor.defaultFormatter": "redhat.vscode-yaml",
-            "editor.tabSize": 2
-        },
         "[markdown]": {
             "editor.wordWrap": "on",
             "editor.renderWhitespace": "all"
-        },
-        "yaml.schemas": {
-            "https://www.schemastore.org/dependabot-2.0.json": "file:///home/krake/raijin-react/.github/dependabot.yml"
         }
     }
 }
