@@ -21,10 +21,18 @@ let solvers : Map<int * int, Solver list> =
         (2024, 6), [ Day06.part1 >> box ; Day06.part2 >> box ]
     ]
 
-let solve (puzzle : AocPuzzle) (input : AocInput) : obj list option =
+let solve (puzzle : AocPuzzle) (input : AocInput) : (obj * int64) list option =
     solvers
     |> Map.tryFind (puzzle.Year, puzzle.Day)
-    |> Option.map (List.map ((|>) input))
+    |> Option.map (fun solverList ->
+        solverList
+        |> List.map (fun solver ->
+            let sw = Stopwatch.StartNew()
+            let result = solver input
+            sw.Stop()
+            result, sw.ElapsedMilliseconds
+        )
+    )
 
 let puzzleTitle (year : int) (day : int) : string option =
     typeof<AocPuzzleAttribute>.Assembly.GetTypes()
@@ -110,14 +118,12 @@ type SolveCommand() =
         table.AddColumn(TableColumn("Status").Centered()) |> ignore
         table.AddColumn(TableColumn("Time (ms)").RightAligned()) |> ignore
 
-        let sw = Stopwatch.StartNew()
 
         match solve { Year = year ; Day = day } input with
         | Some results ->
-            let elapsed = sw.ElapsedMilliseconds
 
             results
-            |> List.iteri (fun i result ->
+            |> List.iteri (fun i (result, elapsed) ->
                 table.AddRow(
                     Markup((i + 1).ToString()),
                     Markup $"%A{result}",
@@ -128,7 +134,6 @@ type SolveCommand() =
             )
         | None -> table.AddRow(Markup "-", Markup "-", Markup "[red]Not Implemented[/]") |> ignore
 
-        sw.Stop()
 
         AnsiConsole.Write table
         0

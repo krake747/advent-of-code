@@ -201,44 +201,51 @@ module Day05 =
 module Day06 =
 
     open Point
+    open System.Collections.Generic
 
-    type PatrolMap = Map<Point, char>
-    type Positions = Set<Point>
+    type PatrolMap = Dictionary<Point, char>
+    type Positions = HashSet<Point>
     type PatrolState = { Position : Point ; Direction : Point }
     type GuardRoute = { Positions : Positions ; Loop : bool }
 
     let parsePatrolMap (lines : string list) : PatrolMap =
+        let dict = Dictionary<Point, char>()
+
         lines
-        |> List.indexed
-        |> List.collect (fun (y, line) -> [ for x, c in line |> Seq.toList |> List.indexed -> { X = x ; Y = y }, c ])
-        |> Map.ofList
+        |> List.iteri (fun y line -> line |> Seq.iteri (fun x c -> dict.[{ X = x ; Y = y }] <- c))
+
+        dict
 
     let locateGuardStart (map : PatrolMap) (c : char) : Point =
         map |> Seq.find (fun kvp -> kvp.Value = c) |> _.Key
 
     let trackGuardRoute (map : PatrolMap) (start : Point) : GuardRoute =
-        let rec track (visited : Set<PatrolState>) (patrol : PatrolState) =
-            if map.ContainsKey patrol.Position && not (visited.Contains patrol) then
-                let visited = visited.Add patrol
+        let visited = HashSet<PatrolState>()
+        let mutable patrol = { Position = start ; Direction = north }
 
-                match map.TryFind(patrol.Position + patrol.Direction) |> Option.defaultValue ' ' with
-                | '#' -> track visited { patrol with Direction = rotateRight patrol.Direction }
-                | _ ->
-                    track visited {
-                        patrol with
-                            Position = patrol.Position + patrol.Direction
-                    }
+        while map.ContainsKey patrol.Position && visited.Add(patrol) do
+            let nextChar =
+                match map.TryGetValue(patrol.Position + patrol.Direction) with
+                | true, ch -> ch
+                | false, _ -> ' '
 
+            if nextChar = '#' then
+                patrol <- { patrol with Direction = rotateRight patrol.Direction }
             else
-                {
-                    Positions = visited |> Seq.map _.Position |> Set.ofSeq
-                    Loop = visited.Contains patrol
+                patrol <- {
+                    patrol with
+                        Position = patrol.Position + patrol.Direction
                 }
 
-        track Set.empty { Position = start ; Direction = north }
+        {
+            Positions = visited |> Seq.map (fun s -> s.Position) |> HashSet
+            Loop = visited.Contains patrol
+        }
 
     let updateMap (map : PatrolMap) (obstacle : char) (position : Point) =
-        map |> Map.map (fun k v -> if k = position then obstacle else v)
+        let newMap = Dictionary map
+        newMap[position] <- obstacle
+        newMap
 
     let part1 (input : AocInput) : int =
         input.Lines
@@ -246,7 +253,7 @@ module Day06 =
         |> (fun map -> map, locateGuardStart map '^')
         |> (fun (map, start) -> trackGuardRoute map start)
         |> _.Positions
-        |> Set.count
+        |> _.Count
 
     let part2 (input : AocInput) : int =
         let map = parsePatrolMap input.Lines
@@ -255,7 +262,7 @@ module Day06 =
 
         route
         |> _.Positions
-        |> Set.filter (fun p -> map[p] = '.')
+        |> Seq.filter (fun p -> map[p] = '.')
         |> Seq.sumBy (fun obstacle ->
             let updatedMap = updateMap map '#' obstacle
             let route = trackGuardRoute updatedMap start
