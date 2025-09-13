@@ -295,29 +295,19 @@ module Day07 =
             }
         )
 
-    let canElephantsSolve (eq : Equation) : bool =
-        let calibrator = tryAllOperators [ (+) ; (*) ]
-
+    let canEngineersSolve (ops : Operator list) (eq : Equation) : bool =
         match eq.Numbers with
-        | n :: rest -> calibrator n rest eq.Test
+        | n :: rest -> tryAllOperators ops n rest eq.Test
         | [] -> false
-
-    let canEngineersSolve (eq : Equation) : bool =
-        let calibrator = tryAllOperators [ (+) ; (*) ; concat ]
-
-        match eq.Numbers with
-        | n :: rest -> calibrator n rest eq.Test
-        | [] -> false
-
 
     let part1 (input : AocInput) : int64 =
         input.Lines
         |> readElphantEquations
-        |> List.filter canElephantsSolve
+        |> List.filter (fun eq -> canEngineersSolve [ (+) ; (*) ] eq)
         |> List.sumBy _.Test
 
     let part2 (input : AocInput) : int64 =
         input.Lines
         |> readElphantEquations
-        |> List.filter canEngineersSolve
+        |> List.filter (fun eq -> canEngineersSolve [ (+) ; (*) ; concat ] eq)
         |> List.sumBy _.Test
