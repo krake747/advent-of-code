@@ -15,6 +15,7 @@ type AocPuzzle = { Year : int ; Day : int }
 
 type AocInput = { Text : string ; Lines : string list }
 
+type AocSolver = AocInput -> obj
 
 [<AocPuzzle(2024, 1, "Historian Hysteria")>]
 module Day01 =
@@ -310,3 +311,32 @@ module Day07 =
         |> readElphantEquations
         |> List.filter (fun eq -> canEngineersSolve [ (+) ; (*) ; concat ] eq)
         |> List.sumBy _.Test
+
+module Solutions2024 =
+    let solvers : Map<(int * int), AocSolver list> =
+        Map [
+            (2024, 1), [ Day01.part1 >> box ; Day01.part2 >> box ]
+            (2024, 2), [ Day02.part1 >> box ; Day02.part2 >> box ]
+            (2024, 3), [ Day03.part1 >> box ; Day03.part2 >> box ]
+            (2024, 4), [ Day04.part1 >> box ; Day04.part2 >> box ]
+            (2024, 5), [ Day05.part1 >> box ; Day05.part2 >> box ]
+            (2024, 6), [ Day06.part1 >> box ; Day06.part2 >> box ]
+            (2024, 7), [ Day07.part1 >> box ; Day07.part2 >> box ]
+            (2024, 8), []
+            (2024, 9), []
+            (2024, 10), []
+            (2024, 11), []
+            (2024, 12), []
+            (2024, 13), []
+            (2024, 14), []
+            (2024, 15), []
+            (2024, 16), []
+            (2024, 17), []
+            (2024, 18), []
+            (2024, 19), []
+            (2024, 20), []
+            (2024, 21), []
+            (2024, 22), []
+            (2024, 23), []
+            (2024, 24), []
+        ]

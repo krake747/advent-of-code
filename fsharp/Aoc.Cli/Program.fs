@@ -1,48 +1,10 @@
 ﻿open Aoc.Cli
-open Aoc.Lib
 open Spectre.Console
 open Spectre.Console.Cli
 open System
 open System.ComponentModel
-open System.Diagnostics
-
-// ---------------------------
-// Solver
-// ---------------------------
-type Solver = AocInput -> obj
-
-let solvers : Map<int * int, Solver list> =
-    Map [
-        (2024, 1), [ Day01.part1 >> box ; Day01.part2 >> box ]
-        (2024, 2), [ Day02.part1 >> box ; Day02.part2 >> box ]
-        (2024, 3), [ Day03.part1 >> box ; Day03.part2 >> box ]
-        (2024, 4), [ Day04.part1 >> box ; Day04.part2 >> box ]
-        (2024, 5), [ Day05.part1 >> box ; Day05.part2 >> box ]
-        (2024, 6), [ Day06.part1 >> box ; Day06.part2 >> box ]
-        (2024, 7), [ Day07.part1 >> box ; Day07.part2 >> box ]
-    ]
-
-let solve (puzzle : AocPuzzle) (input : AocInput) : (obj * int64) list option =
-    solvers
-    |> Map.tryFind (puzzle.Year, puzzle.Day)
-    |> Option.map (fun solverList ->
-        solverList
-        |> List.map (fun solver ->
-            let sw = Stopwatch.StartNew()
-            let result = solver input
-            sw.Stop()
-            result, sw.ElapsedMilliseconds
-        )
-    )
-
-let puzzleTitle (year : int) (day : int) : string option =
-    typeof<AocPuzzleAttribute>.Assembly.GetTypes()
-    |> Array.tryPick (fun t ->
-        t.GetCustomAttributes(typeof<AocPuzzleAttribute>, false)
-        |> Seq.cast<AocPuzzleAttribute>
-        |> Seq.tryFind (fun attr -> attr.Year = year && attr.Day = day)
-        |> Option.map (fun attr -> attr.Title)
-    )
+open Aoc.Lib
+open Aoc.Lib
 
 // ---------------------------
 // Command settings
@@ -107,7 +69,7 @@ type SolveCommand() =
             | _ -> Runner.ensureInput client year day
 
         let title =
-            match puzzleTitle year day with
+            match Solver.puzzleTitle year day with
             | Some t -> $"{t} - Year {year} Day {day}"
             | None -> $"Year {year} Day {day}"
 
@@ -119,8 +81,9 @@ type SolveCommand() =
         table.AddColumn(TableColumn("Status").Centered()) |> ignore
         table.AddColumn(TableColumn("Time (ms)").RightAligned()) |> ignore
 
+        let solvers = Solutions2024.solvers
 
-        match solve { Year = year ; Day = day } input with
+        match Solver.solve solvers { Year = year ; Day = day } input with
         | Some results ->
 
             results
