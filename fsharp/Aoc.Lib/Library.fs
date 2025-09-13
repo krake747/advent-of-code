@@ -223,7 +223,7 @@ module Day06 =
         let visited = HashSet<PatrolState>()
         let mutable patrol = { Position = start ; Direction = north }
 
-        while map.ContainsKey patrol.Position && visited.Add(patrol) do
+        while map.ContainsKey patrol.Position && visited.Add patrol do
             let nextChar =
                 match map.TryGetValue(patrol.Position + patrol.Direction) with
                 | true, ch -> ch
@@ -242,8 +242,8 @@ module Day06 =
             Loop = visited.Contains patrol
         }
 
-    let updateMap (map : PatrolMap) (obstacle : char) (position : Point) =
-        let newMap = Dictionary map
+    let updateMap (map : PatrolMap) (obstacle : char) (position : Point) : PatrolMap =
+        let newMap = PatrolMap map
         newMap[position] <- obstacle
         newMap
 
@@ -266,5 +266,5 @@ module Day06 =
         |> Seq.sumBy (fun obstacle ->
             let updatedMap = updateMap map '#' obstacle
             let route = trackGuardRoute updatedMap start
-            route |> _.Loop |> (fun loop -> if loop then 1 else 0)
+            route |> _.Loop |> fun loop -> if loop then 1 else 0
         )
