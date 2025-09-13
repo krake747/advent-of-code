@@ -243,9 +243,8 @@ module Day06 =
         }
 
     let updateMap (map : PatrolMap) (obstacle : char) (position : Point) : PatrolMap =
-        let newMap = PatrolMap map
-        newMap[position] <- obstacle
-        newMap
+        map[position] <- obstacle
+        map
 
     let part1 (input : AocInput) : int =
         input.Lines
@@ -274,8 +273,8 @@ module Day07 =
     type Equation = { Test : int64 ; Numbers : int64 list }
     type Operator = int64 -> int64 -> int64
 
-    let split (sep : string) (s : string) = s.Split sep
-    let splitByChar (sep : char) (s : string) = s.Split sep
+    let split (sep : string) (s : string) = s.Split sep |> Array.toList
+    let splitByChar (sep : char) (s : string) = s.Split sep |> Array.toList
 
     let concat (x : int64) (y : int64) = int64 (string x + string y)
 
@@ -291,7 +290,7 @@ module Day07 =
 
             {
                 Test = int64 parts[0]
-                Numbers = splitByChar ' ' parts[1] |> (Array.map int64 >> Array.toList)
+                Numbers = parts[1] |> splitByChar ' ' |> List.map int64
             }
         )
 
